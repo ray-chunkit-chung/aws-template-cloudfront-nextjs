@@ -1,15 +1,14 @@
 # AWS CloudFront + Next.js Template
 
-**A production-ready Next.js static site with automated AWS deployment pipeline.**
-
-## 🎯 What This Is
+Next.js static site with automated AWS deployment pipeline.
 
 Static Next.js app (React 19, TypeScript, Tailwind) deployed to AWS via S3 + CloudFront with automated CI/CD using GitHub Actions and CodePipeline.
 
-**Stack:** Next.js 16 (static export) → S3 → CloudFront CDN  
-**CI/CD:** GitHub Actions (infra) + AWS CodePipeline (app builds)
+Next.js 16 (static export) → S3 → CloudFront CDN  
 
-## 🚀 Quick Start
+GitHub Actions (infra) + AWS CodePipeline (app builds)
+
+## Quick Start
 
 ```bash
 npm install -g npm
@@ -18,9 +17,9 @@ pnpm install
 pnpm dev
 ```
 
-Visit: <https://d3mgvsp9c43deq.cloudfront.net/>
+Visit: <https://dpb4h4w25ser9.cloudfront.net/>
 
-## 📦 Initial AWS Setup
+## Initial AWS Setup
 
 ### 1. Prerequisites
 
@@ -30,78 +29,13 @@ Visit: <https://d3mgvsp9c43deq.cloudfront.net/>
 
 ### 2. Create IAM User with Required Permissions
 
-The IAM user (e.g., `cloudformation-user`) needs the following permissions:
+The IAM user needs the following permissions. Resources are Wildcard. Use at your own **risk**.
 
-**Required IAM Policy:**
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "CloudFormationAccess",
-      "Effect": "Allow",
-      "Action": [
-        "cloudformation:*"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "S3Access",
-      "Effect": "Allow",
-      "Action": [
-        "s3:*"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "CloudFrontAccess",
-      "Effect": "Allow",
-      "Action": [
-        "cloudfront:*"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "CodePipelineAccess",
-      "Effect": "Allow",
-      "Action": [
-        "codepipeline:*",
-        "codebuild:*",
-        "codestar-connections:*"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "IAMRoleManagement",
-      "Effect": "Allow",
-      "Action": [
-        "iam:CreateRole",
-        "iam:DeleteRole",
-        "iam:GetRole",
-        "iam:PassRole",
-        "iam:AttachRolePolicy",
-        "iam:DetachRolePolicy",
-        "iam:PutRolePolicy",
-        "iam:DeleteRolePolicy",
-        "iam:GetRolePolicy"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-```
-
-**How to apply:**
-
-1. Go to AWS Console → IAM → Users → `cloudformation-user`
-2. Click "Add permissions" → "Create inline policy"
-3. Paste the JSON above
-4. Name it `CloudFormationDeploymentPolicy`
+`infra\iam-policy-deployment.json`
 
 ### 3. GitHub Repository Secrets
 
-Add these in **Settings → Secrets and variables → Actions**:
+Add these in Settings → Secrets and variables → Actions:
 
 **Secrets:**
 
@@ -119,7 +53,7 @@ CODESTAR_CONNECTION_ARN
 STACK_NAME_PREFIX
 ```
 
-## 🔄 How Deployment Works
+## How Deployment Works
 
 After variable setup, pushing to branch triggers:
 
@@ -133,7 +67,7 @@ After variable setup, pushing to branch triggers:
    - Syncs to S3 and invalidates CloudFront cache
    - Triggered by any code push
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 .

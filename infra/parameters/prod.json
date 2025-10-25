@@ -1,11 +1,11 @@
 [
   {
     "ParameterKey": "BucketName",
-    "ParameterValue": "aws-template-frontend-prod"
+    "ParameterValue": "raychung-app001-prod"
   },
   {
     "ParameterKey": "GitHubRepo",
-    "ParameterValue": "ray-chunkit-chung/aws-template-frontend"
+    "ParameterValue": "ray-chunkit-chung/aws-template-cloudfront-nextjs"
   },
   {
     "ParameterKey": "GitHubBranch",

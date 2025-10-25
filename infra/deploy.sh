@@ -34,13 +34,12 @@ if [ -z "$GITHUB_REPO" ]; then
   exit 1
 fi
 
-# Check if yq is installed
+# Merge all template files using yq
+echo "Merging CloudFormation templates..."
 if ! command -v yq &> /dev/null; then
+  echo "yq could not be found, installing..."
   sudo snap install yq
 fi
-echo "Merging CloudFormation templates..."
-# Merge all template files using yq
-# The eval-all with '. as $item ireduce ({}; . * $item)' merges all YAML files
 yq eval-all '. as $item ireduce ({}; . * $item)' \
   templates/00-parameters.yaml \
   templates/01-s3-buckets.yaml \

@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Parameters for CloudFormation template"
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Name for the S3 bucket
+
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository name (e.g., username/repo-name)
+
+  GitHubBranch:
+    Type: String
+    Description: GitHub branch to deploy from
+
+  CodeStarConnectionArn:
+    Type: String
+    Description: ARN of the CodeConnections (formerly CodeStar Connections) to GitHub

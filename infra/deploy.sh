@@ -34,11 +34,34 @@ if [ -z "$GITHUB_REPO" ]; then
   exit 1
 fi
 
-echo "Deploying stack: $STACK_NAME"
-echo "Environment: $ENVIRONMENT"
+# Check if yq is installed
+if ! command -v yq &> /dev/null; then
+  sudo snap install yq
+fi
+echo "Merging CloudFormation templates..."
+# Merge all template files using yq
+# The eval-all with '. as $item ireduce ({}; . * $item)' merges all YAML files
+yq eval-all '. as $item ireduce ({}; . * $item)' \
+  templates/00-parameters.yaml \
+  templates/01-s3-buckets.yaml \
+  templates/02-cloudfront.yaml \
+  templates/03-cicd-pipeline.yaml \
+  templates/99-outputs.yaml \
+  > template.yaml
+echo "Template merged successfully"
+echo ""
+
+echo "==================================="
+echo "Deployment Configuration"
+echo "==================================="
+echo "Stack Name:    $STACK_NAME"
+echo "Environment:   $ENVIRONMENT"
 echo "GitHub Branch: $GITHUB_BRANCH"
-echo "GitHub Repo: $GITHUB_REPO"
-echo "Bucket: $BUCKET_NAME"
+echo "GitHub Repo:   $GITHUB_REPO"
+echo "Bucket Name:   $BUCKET_NAME"
+echo "AWS Region:    $AWS_REGION"
+echo "==================================="
+echo ""
 
 # Deploy with parameter overrides
 aws cloudformation deploy \

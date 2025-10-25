@@ -5,9 +5,10 @@ AWS_REGION=${AWS_REGION}
 CODESTAR_CONNECTION_ARN=${CODESTAR_CONNECTION_ARN}
 STACK_NAME_PREFIX=${STACK_NAME_PREFIX}
 GITHUB_REPO=${GITHUB_REPO}
+GITHUB_BRANCH=${ENVIRONMENT}
 STACK_NAME="${STACK_NAME_PREFIX}-${ENVIRONMENT}"
 BUCKET_NAME=${STACK_NAME}
-FILE_BASED_PARAMETERS=$(jq -r '.[] | "\(.ParameterKey)=\(.ParameterValue)"' "parameters/${ENVIRONMENT}.json")
+# FILE_BASED_PARAMETERS=$(jq -r '.[] | "\(.ParameterKey)=\(.ParameterValue)"' "parameters/${ENVIRONMENT}.json")
 
 # Check if AWS Region is provided
 if [ -z "$AWS_REGION" ]; then
@@ -33,10 +34,17 @@ if [ -z "$GITHUB_REPO" ]; then
   exit 1
 fi
 
+echo "Deploying stack: $STACK_NAME"
+echo "Environment: $ENVIRONMENT"
+echo "GitHub Branch: $GITHUB_BRANCH"
+echo "GitHub Repo: $GITHUB_REPO"
+echo "Bucket: $BUCKET_NAME"
+
 # Deploy with parameter overrides
 aws cloudformation deploy \
   --template-file template.yaml \
   --stack-name $STACK_NAME \
-  --parameter-overrides $FILE_BASED_PARAMETERS BucketName="$BUCKET_NAME" GitHubRepo="$GITHUB_REPO" CodeStarConnectionArn="$CODESTAR_CONNECTION_ARN" \
+  # --parameter-overrides $FILE_BASED_PARAMETERS BucketName="$BUCKET_NAME" GitHubRepo="$GITHUB_REPO" GitHubBranch="$GITHUB_BRANCH" CodeStarConnectionArn="$CODESTAR_CONNECTION_ARN" \
+  --parameter-overrides BucketName="$BUCKET_NAME" GitHubRepo="$GITHUB_REPO" GitHubBranch="$GITHUB_BRANCH" CodeStarConnectionArn="$CODESTAR_CONNECTION_ARN" \
   --capabilities CAPABILITY_IAM \
   --region $AWS_REGION

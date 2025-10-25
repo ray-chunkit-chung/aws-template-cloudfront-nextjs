@@ -46,11 +46,7 @@ jobs:
         id: set_env
         run: |
           BRANCH_NAME="${{ github.ref_name }}"
-          if [ "$BRANCH_NAME" = "main" ]; then
-            ENV_NAME="prod"
-          else
-            ENV_NAME="$BRANCH_NAME"
-          fi
+          ENV_NAME="$BRANCH_NAME"
           echo "environment=$ENV_NAME" >> $GITHUB_OUTPUT
           echo "Deploying branch: $BRANCH_NAME as environment: $ENV_NAME"
 

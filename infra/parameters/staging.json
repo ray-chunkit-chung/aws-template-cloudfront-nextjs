@@ -1,6 +1,6 @@
 [
   {
-    "ParameterKey": "GitHubBranch",
-    "ParameterValue": "staging"
+    // "ParameterKey": "GitHubBranch",
+    // "ParameterValue": "staging"
   }
 ]

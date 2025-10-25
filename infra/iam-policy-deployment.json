@@ -2,36 +2,108 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "CloudFormationAccess",
+      "Sid": "CloudFormationStackOperations",
       "Effect": "Allow",
       "Action": [
-        "cloudformation:*"
+        "cloudformation:CreateStack",
+        "cloudformation:UpdateStack",
+        "cloudformation:DeleteStack",
+        "cloudformation:DescribeStacks",
+        "cloudformation:DescribeStackEvents",
+        "cloudformation:DescribeStackResources",
+        "cloudformation:GetTemplate",
+        "cloudformation:ValidateTemplate",
+        "cloudformation:CreateChangeSet",
+        "cloudformation:DescribeChangeSet",
+        "cloudformation:ExecuteChangeSet",
+        "cloudformation:DeleteChangeSet",
+        "cloudformation:ListStackResources"
       ],
       "Resource": "*"
     },
     {
-      "Sid": "S3Access",
+      "Sid": "S3BucketOperations",
       "Effect": "Allow",
       "Action": [
-        "s3:*"
+        "s3:CreateBucket",
+        "s3:DeleteBucket",
+        "s3:GetBucketLocation",
+        "s3:GetBucketVersioning",
+        "s3:PutBucketVersioning",
+        "s3:GetBucketLogging",
+        "s3:PutBucketLogging",
+        "s3:GetBucketWebsite",
+        "s3:PutBucketWebsite",
+        "s3:DeleteBucketWebsite",
+        "s3:GetBucketPolicy",
+        "s3:PutBucketPolicy",
+        "s3:DeleteBucketPolicy",
+        "s3:GetBucketPublicAccessBlock",
+        "s3:PutBucketPublicAccessBlock",
+        "s3:GetLifecycleConfiguration",
+        "s3:PutLifecycleConfiguration",
+        "s3:ListBucket"
       ],
       "Resource": "*"
     },
     {
-      "Sid": "CloudFrontAccess",
+      "Sid": "S3ObjectOperations",
       "Effect": "Allow",
       "Action": [
-        "cloudfront:*"
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
       ],
       "Resource": "*"
     },
     {
-      "Sid": "CodePipelineAccess",
+      "Sid": "CloudFrontDistributionOperations",
       "Effect": "Allow",
       "Action": [
-        "codepipeline:*",
-        "codebuild:*",
-        "codestar-connections:*"
+        "cloudfront:CreateDistribution",
+        "cloudfront:GetDistribution",
+        "cloudfront:GetDistributionConfig",
+        "cloudfront:UpdateDistribution",
+        "cloudfront:DeleteDistribution",
+        "cloudfront:TagResource",
+        "cloudfront:CreateInvalidation",
+        "cloudfront:GetInvalidation",
+        "cloudfront:ListInvalidations"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "CodeBuildProjectOperations",
+      "Effect": "Allow",
+      "Action": [
+        "codebuild:CreateProject",
+        "codebuild:DeleteProject",
+        "codebuild:UpdateProject",
+        "codebuild:BatchGetProjects"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "CodePipelineOperations",
+      "Effect": "Allow",
+      "Action": [
+        "codepipeline:CreatePipeline",
+        "codepipeline:DeletePipeline",
+        "codepipeline:GetPipeline",
+        "codepipeline:UpdatePipeline",
+        "codepipeline:GetPipelineState",
+        "codepipeline:TagResource"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "CodeStarConnectionsRead",
+      "Effect": "Allow",
+      "Action": [
+        "codestar-connections:GetConnection",
+        "codestar-connections:ListConnections",
+        "codeconnections:GetConnection",
+        "codeconnections:ListConnections"
       ],
       "Resource": "*"
     },
@@ -43,18 +115,21 @@
         "iam:DeleteRole",
         "iam:GetRole",
         "iam:PassRole",
-        "iam:AttachRolePolicy",
-        "iam:DetachRolePolicy",
         "iam:PutRolePolicy",
         "iam:DeleteRolePolicy",
         "iam:GetRolePolicy",
-        "iam:ListAttachedRolePolicies",
-        "iam:ListRolePolicies"
+        "iam:ListRolePolicies",
+        "iam:UpdateAssumeRolePolicy",
+        "iam:TagRole",
+        "iam:UntagRole"
       ],
-      "Resource": "*"
+      "Resource": [
+        "arn:aws:iam::*:role/*CodeBuildRole*",
+        "arn:aws:iam::*:role/*CodePipelineRole*"
+      ]
     },
     {
-      "Sid": "STSAccess",
+      "Sid": "STSGetCallerIdentity",
       "Effect": "Allow",
       "Action": [
         "sts:GetCallerIdentity"

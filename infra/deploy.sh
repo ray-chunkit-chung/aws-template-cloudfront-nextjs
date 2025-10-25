@@ -44,7 +44,6 @@ echo "Bucket: $BUCKET_NAME"
 aws cloudformation deploy \
   --template-file template.yaml \
   --stack-name $STACK_NAME \
-  # --parameter-overrides $FILE_BASED_PARAMETERS BucketName="$BUCKET_NAME" GitHubRepo="$GITHUB_REPO" GitHubBranch="$GITHUB_BRANCH" CodeStarConnectionArn="$CODESTAR_CONNECTION_ARN" \
   --parameter-overrides BucketName="$BUCKET_NAME" GitHubRepo="$GITHUB_REPO" GitHubBranch="$GITHUB_BRANCH" CodeStarConnectionArn="$CODESTAR_CONNECTION_ARN" \
   --capabilities CAPABILITY_IAM \
   --region $AWS_REGION

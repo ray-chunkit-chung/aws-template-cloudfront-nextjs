@@ -19,7 +19,10 @@ Parameters:
     Description: ARN of the CodeConnections (formerly CodeStar Connections) to GitHub
 
 Resources:
-  # S3 Bucket for logging
+  # ==========================================
+  # S3 BUCKETS
+  # ==========================================
+
   LogBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -91,7 +94,10 @@ Resources:
         DestinationBucketName: !Ref LogBucket
         LogFilePrefix: artifacts-logs/
 
-  # CloudFront Distribution
+  # ==========================================
+  # CLOUDFRONT
+  # ==========================================
+
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -127,7 +133,10 @@ Resources:
             ResponsePagePath: /404.html
             ErrorCachingMinTTL: 300
 
-  # IAM Role for CodeBuild
+  # ==========================================
+  # CI/CD PIPELINE
+  # ==========================================
+
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:

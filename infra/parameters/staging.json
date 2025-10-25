@@ -1,9 +1,5 @@
 [
   {
-    "ParameterKey": "GitHubRepo",
-    "ParameterValue": "ray-chunkit-chung/aws-template-cloudfront-nextjs"
-  },
-  {
     "ParameterKey": "GitHubBranch",
     "ParameterValue": "staging"
   }

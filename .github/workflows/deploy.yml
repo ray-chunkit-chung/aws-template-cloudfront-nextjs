@@ -44,9 +44,10 @@ jobs:
         run: |
           echo "Deploying environment: ${{ steps.set_env.outputs.environment }}"
           echo "Deploying to region: ${{ secrets.AWS_REGION }}"
+          echo "GitHub repository: ${{ github.repository }}"
           chmod +x infra/deploy.sh
           cd infra
-          AWS_REGION=${{ secrets.AWS_REGION }} CODESTAR_CONNECTION_ARN=${{ secrets.CODESTAR_CONNECTION_ARN }} STACK_NAME_PREFIX=${{ vars.STACK_NAME_PREFIX }} ./deploy.sh ${{ steps.set_env.outputs.environment }}
+          AWS_REGION=${{ secrets.AWS_REGION }} CODESTAR_CONNECTION_ARN=${{ secrets.CODESTAR_CONNECTION_ARN }} STACK_NAME_PREFIX=${{ vars.STACK_NAME_PREFIX }} GITHUB_REPO=${{ github.repository }} ./deploy.sh ${{ steps.set_env.outputs.environment }}
 
       - name: Get CloudFormation outputs
         run: |

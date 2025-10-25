@@ -4,6 +4,7 @@ ENVIRONMENT=${1:-dev}
 AWS_REGION=${AWS_REGION}
 CODESTAR_CONNECTION_ARN=${CODESTAR_CONNECTION_ARN}
 STACK_NAME_PREFIX=${STACK_NAME_PREFIX}
+GITHUB_REPO=${GITHUB_REPO}
 STACK_NAME="${STACK_NAME_PREFIX}-${ENVIRONMENT}"
 BUCKET_NAME=${STACK_NAME}
 FILE_BASED_PARAMETERS=$(jq -r '.[] | "\(.ParameterKey)=\(.ParameterValue)"' "parameters/${ENVIRONMENT}.json")
@@ -26,10 +27,16 @@ if [ -z "$CODESTAR_CONNECTION_ARN" ]; then
   exit 1
 fi
 
+# Check if GitHub Repo is provided
+if [ -z "$GITHUB_REPO" ]; then
+  echo "ERROR: GITHUB_REPO environment variable is not set"
+  exit 1
+fi
+
 # Deploy with parameter overrides
 aws cloudformation deploy \
   --template-file template.yaml \
   --stack-name $STACK_NAME \
-  --parameter-overrides $FILE_BASED_PARAMETERS BucketName="$BUCKET_NAME" CodeStarConnectionArn="$CODESTAR_CONNECTION_ARN" \
+  --parameter-overrides $FILE_BASED_PARAMETERS BucketName="$BUCKET_NAME" GitHubRepo="$GITHUB_REPO" CodeStarConnectionArn="$CODESTAR_CONNECTION_ARN" \
   --capabilities CAPABILITY_IAM \
   --region $AWS_REGION

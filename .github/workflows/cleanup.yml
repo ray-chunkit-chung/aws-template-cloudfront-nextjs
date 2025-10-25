@@ -1,0 +1,241 @@
+name: Cleanup
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  cleanup:
+    name: Cleanup CloudFormation Stack
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set environment name
+        id: set_env
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          if [ "$BRANCH_NAME" = "main" ]; then
+            ENV_NAME="prod"
+          else
+            ENV_NAME="$BRANCH_NAME"
+          fi
+          echo "environment=$ENV_NAME" >> $GITHUB_OUTPUT
+          echo "Cleaning up branch: $BRANCH_NAME as environment: $ENV_NAME"
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Verify AWS credentials
+        run: |
+          echo "AWS Account ID: $(aws sts get-caller-identity --query Account --output text)"
+          echo "AWS Region: ${{ secrets.AWS_REGION }}"
+
+      - name: Get stack resources
+        id: stack_info
+        run: |
+          STACK_NAME_PREFIX="${{ vars.STACK_NAME_PREFIX }}"
+          STACK_NAME="${STACK_NAME_PREFIX}-${{ steps.set_env.outputs.environment }}"
+          AWS_REGION="${{ secrets.AWS_REGION }}"
+
+          echo "### Stack Resources to be Deleted" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check if stack exists
+          if ! aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --region $AWS_REGION \
+            --query 'Stacks[0].StackStatus' \
+            --output text 2>/dev/null; then
+            echo "Stack $STACK_NAME does not exist in region $AWS_REGION" >> $GITHUB_STEP_SUMMARY
+            echo "stack_exists=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "stack_exists=true" >> $GITHUB_OUTPUT
+
+          # Get stack outputs before deletion
+          WEBSITE_URL=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query 'Stacks[0].Outputs[?OutputKey==`WebsiteURL`].OutputValue' \
+            --output text \
+            --region $AWS_REGION 2>/dev/null || echo "N/A")
+
+          BUCKET_NAME=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' \
+            --output text \
+            --region $AWS_REGION 2>/dev/null || echo "N/A")
+
+          CF_DIST_ID=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDistributionId`].OutputValue' \
+            --output text \
+            --region $AWS_REGION 2>/dev/null || echo "N/A")
+
+          echo "| Resource | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Stack Name | $STACK_NAME |" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ steps.set_env.outputs.environment }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| AWS Region | $AWS_REGION |" >> $GITHUB_STEP_SUMMARY
+          echo "| Website URL | $WEBSITE_URL |" >> $GITHUB_STEP_SUMMARY
+          echo "| S3 Bucket | $BUCKET_NAME |" >> $GITHUB_STEP_SUMMARY
+          echo "| CloudFront Distribution | $CF_DIST_ID |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "bucket_name=$BUCKET_NAME" >> $GITHUB_OUTPUT
+
+      - name: Empty S3 buckets
+        if: steps.stack_info.outputs.stack_exists == 'true'
+        run: |
+          STACK_NAME_PREFIX="${{ vars.STACK_NAME_PREFIX }}"
+          STACK_NAME="${STACK_NAME_PREFIX}-${{ steps.set_env.outputs.environment }}"
+          AWS_REGION="${{ secrets.AWS_REGION }}"
+
+          echo "Emptying S3 buckets..."
+
+          # Get all S3 buckets in the stack
+          BUCKETS=$(aws cloudformation list-stack-resources \
+            --stack-name $STACK_NAME \
+            --region $AWS_REGION \
+            --query 'StackResourceSummaries[?ResourceType==`AWS::S3::Bucket`].PhysicalResourceId' \
+            --output text)
+
+          for BUCKET in $BUCKETS; do
+            echo "Emptying bucket: $BUCKET"
+            
+            # Delete all versions and delete markers for versioned buckets
+            echo "Deleting all object versions..."
+            aws s3api list-object-versions \
+              --bucket $BUCKET \
+              --region $AWS_REGION \
+              --output json \
+              --query '{Objects: Versions[].{Key:Key,VersionId:VersionId}}' 2>/dev/null \
+              | jq -r '.Objects[]? | "aws s3api delete-object --bucket '$BUCKET' --key \"\(.Key)\" --version-id \"\(.VersionId)\" --region '$AWS_REGION'"' \
+              | bash || true
+            
+            echo "Deleting all delete markers..."
+            aws s3api list-object-versions \
+              --bucket $BUCKET \
+              --region $AWS_REGION \
+              --output json \
+              --query '{Objects: DeleteMarkers[].{Key:Key,VersionId:VersionId}}' 2>/dev/null \
+              | jq -r '.Objects[]? | "aws s3api delete-object --bucket '$BUCKET' --key \"\(.Key)\" --version-id \"\(.VersionId)\" --region '$AWS_REGION'"' \
+              | bash || true
+            
+            # Delete any remaining current objects
+            echo "Deleting current objects..."
+            aws s3 rm s3://$BUCKET --recursive --region $AWS_REGION || true
+            
+            echo "✅ Bucket $BUCKET emptied"
+          done
+
+      - name: Disable CloudFront distribution
+        if: steps.stack_info.outputs.stack_exists == 'true'
+        run: |
+          STACK_NAME_PREFIX="${{ vars.STACK_NAME_PREFIX }}"
+          STACK_NAME="${STACK_NAME_PREFIX}-${{ steps.set_env.outputs.environment }}"
+          AWS_REGION="${{ secrets.AWS_REGION }}"
+
+          # Get CloudFront distribution ID
+          CF_DIST_ID=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDistributionId`].OutputValue' \
+            --output text \
+            --region $AWS_REGION 2>/dev/null || echo "")
+
+          if [ -n "$CF_DIST_ID" ] && [ "$CF_DIST_ID" != "None" ]; then
+            echo "Found CloudFront distribution: $CF_DIST_ID"
+            
+            # Check if distribution exists
+            if aws cloudfront get-distribution --id $CF_DIST_ID 2>/dev/null; then
+              echo "Disabling CloudFront distribution: $CF_DIST_ID"
+              
+              # Get current config
+              ETAG=$(aws cloudfront get-distribution-config \
+                --id $CF_DIST_ID \
+                --query 'ETag' \
+                --output text 2>/dev/null)
+              
+              if [ -n "$ETAG" ]; then
+                # Get config and disable it
+                aws cloudfront get-distribution-config \
+                  --id $CF_DIST_ID \
+                  --query 'DistributionConfig' \
+                  --output json > /tmp/cf-config.json
+                
+                # Modify config to disable
+                jq '.Enabled = false' /tmp/cf-config.json > /tmp/cf-config-disabled.json
+                
+                # Update distribution
+                aws cloudfront update-distribution \
+                  --id $CF_DIST_ID \
+                  --distribution-config file:///tmp/cf-config-disabled.json \
+                  --if-match $ETAG 2>/dev/null || echo "Failed to disable distribution, it may already be disabled"
+                
+                echo "Waiting for CloudFront distribution to be disabled (this may take several minutes)..."
+                aws cloudfront wait distribution-deployed --id $CF_DIST_ID 2>/dev/null || echo "Distribution deployment wait skipped"
+                
+                echo "✅ CloudFront distribution disabled"
+              else
+                echo "⚠️ Could not get distribution config, it may already be deleted"
+              fi
+            else
+              echo "⚠️ CloudFront distribution $CF_DIST_ID does not exist (already deleted)"
+            fi
+          else
+            echo "No CloudFront distribution found in stack outputs"
+          fi
+
+      - name: Delete CloudFormation stack
+        if: steps.stack_info.outputs.stack_exists == 'true'
+        run: |
+          STACK_NAME_PREFIX="${{ vars.STACK_NAME_PREFIX }}"
+          STACK_NAME="${STACK_NAME_PREFIX}-${{ steps.set_env.outputs.environment }}"
+          AWS_REGION="${{ secrets.AWS_REGION }}"
+
+          echo "Deleting CloudFormation stack: $STACK_NAME"
+
+          aws cloudformation delete-stack \
+            --stack-name $STACK_NAME \
+            --region $AWS_REGION
+
+          echo "Waiting for stack deletion to complete..."
+          aws cloudformation wait stack-delete-complete \
+            --stack-name $STACK_NAME \
+            --region $AWS_REGION
+
+          echo "Stack deleted successfully"
+
+      - name: Cleanup summary
+        if: success()
+        run: |
+          echo "### Cleanup Completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All resources for the **${{ steps.set_env.outputs.environment }}** environment have been successfully deleted from region **${{ secrets.AWS_REGION }}**." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deleted resources:**" >> $GITHUB_STEP_SUMMARY
+          echo "- CloudFormation Stack" >> $GITHUB_STEP_SUMMARY
+          echo "- S3 Buckets (Website + Pipeline Artifacts)" >> $GITHUB_STEP_SUMMARY
+          echo "- CloudFront Distribution" >> $GITHUB_STEP_SUMMARY
+          echo "- CodePipeline" >> $GITHUB_STEP_SUMMARY
+          echo "- CodeBuild Project" >> $GITHUB_STEP_SUMMARY
+          echo "- IAM Roles and Policies" >> $GITHUB_STEP_SUMMARY
+
+      - name: Cleanup failed
+        if: failure()
+        run: |
+          echo "### Cleanup Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "There was an error during the cleanup process. Please check the logs and manually verify the resources." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "You may need to:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Manually empty S3 buckets" >> $GITHUB_STEP_SUMMARY
+          echo "2. Disable and delete CloudFront distributions" >> $GITHUB_STEP_SUMMARY
+          echo "3. Delete the CloudFormation stack via AWS Console" >> $GITHUB_STEP_SUMMARY
+          exit 1

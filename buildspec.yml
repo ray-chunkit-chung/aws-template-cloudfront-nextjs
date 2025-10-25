@@ -1,0 +1,30 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 22
+    commands:
+      - npm install -g pnpm@latest
+  pre_build:
+    commands:
+      - echo Installing dependencies...
+      - pnpm install --frozen-lockfile
+  build:
+    commands:
+      - echo Building Next.js application...
+      - pnpm run build
+      - echo "Checking build output..."
+      - ls -la ./out/ || echo "out directory does not exist"
+  post_build:
+    commands:
+      - echo "Environment variables:"
+      - echo "S3_BUCKET = $S3_BUCKET"
+      - echo "CLOUDFRONT_DISTRIBUTION_ID = $CLOUDFRONT_DISTRIBUTION_ID"
+      - echo Deploying to S3...
+      - aws s3 sync ./out/ s3://$S3_BUCKET --delete --debug
+      - echo Invalidating CloudFront cache...
+      - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+artifacts:
+  files:
+    - "**/*"
+  base-directory: out

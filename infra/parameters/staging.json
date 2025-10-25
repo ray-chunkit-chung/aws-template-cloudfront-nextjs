@@ -1,0 +1,14 @@
+[
+  {
+    "ParameterKey": "BucketName",
+    "ParameterValue": "aws-template-frontend-staging"
+  },
+  {
+    "ParameterKey": "GitHubRepo",
+    "ParameterValue": "ray-chunkit-chung/aws-template-frontend"
+  },
+  {
+    "ParameterKey": "GitHubBranch",
+    "ParameterValue": "staging"
+  }
+]

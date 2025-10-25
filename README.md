@@ -17,7 +17,7 @@ pnpm install
 pnpm dev
 ```
 
-Visit: <https://dpb4h4w25ser9.cloudfront.net/>
+Visit: <https://d3i47zvmwaz5s3.cloudfront.net/>
 
 ## Initial AWS Setup
 

@@ -1,9 +1,5 @@
 [
   {
-    "ParameterKey": "BucketName",
-    "ParameterValue": "raychung-app001-staging"
-  },
-  {
     "ParameterKey": "GitHubRepo",
     "ParameterValue": "ray-chunkit-chung/aws-template-cloudfront-nextjs"
   },

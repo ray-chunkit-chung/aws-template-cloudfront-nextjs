@@ -5,8 +5,8 @@ AWS_REGION=${AWS_REGION}
 CODESTAR_CONNECTION_ARN=${CODESTAR_CONNECTION_ARN}
 STACK_NAME_PREFIX=${STACK_NAME_PREFIX}
 STACK_NAME="${STACK_NAME_PREFIX}-${ENVIRONMENT}"
+BUCKET_NAME=${STACK_NAME}
 FILE_BASED_PARAMETERS=$(jq -r '.[] | "\(.ParameterKey)=\(.ParameterValue)"' "parameters/${ENVIRONMENT}.json")
-
 
 # Check if AWS Region is provided
 if [ -z "$AWS_REGION" ]; then
@@ -30,6 +30,6 @@ fi
 aws cloudformation deploy \
   --template-file template.yaml \
   --stack-name $STACK_NAME \
-  --parameter-overrides $FILE_BASED_PARAMETERS CodeStarConnectionArn="$CODESTAR_CONNECTION_ARN" \
+  --parameter-overrides $FILE_BASED_PARAMETERS BucketName="$BUCKET_NAME" CodeStarConnectionArn="$CODESTAR_CONNECTION_ARN" \
   --capabilities CAPABILITY_IAM \
   --region $AWS_REGION

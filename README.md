@@ -28,7 +28,78 @@ Visit: <https://d3mgvsp9c43deq.cloudfront.net/>
 - GitHub repository with code
 - AWS CodeConnection to GitHub (get `CODESTAR_CONNECTION_ARN`)
 
-### 2. GitHub Repository Secrets
+### 2. Create IAM User with Required Permissions
+
+The IAM user (e.g., `cloudformation-user`) needs the following permissions:
+
+**Required IAM Policy:**
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CloudFormationAccess",
+      "Effect": "Allow",
+      "Action": [
+        "cloudformation:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "S3Access",
+      "Effect": "Allow",
+      "Action": [
+        "s3:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "CloudFrontAccess",
+      "Effect": "Allow",
+      "Action": [
+        "cloudfront:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "CodePipelineAccess",
+      "Effect": "Allow",
+      "Action": [
+        "codepipeline:*",
+        "codebuild:*",
+        "codestar-connections:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "IAMRoleManagement",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:DeleteRole",
+        "iam:GetRole",
+        "iam:PassRole",
+        "iam:AttachRolePolicy",
+        "iam:DetachRolePolicy",
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:GetRolePolicy"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+**How to apply:**
+
+1. Go to AWS Console → IAM → Users → `cloudformation-user`
+2. Click "Add permissions" → "Create inline policy"
+3. Paste the JSON above
+4. Name it `CloudFormationDeploymentPolicy`
+
+### 3. GitHub Repository Secrets
 
 Add these in **Settings → Secrets and variables → Actions**:
 

@@ -82,15 +82,9 @@ After variable setup, pushing to branch triggers:
 │   │   ├── dev.json                  # Dev environment config (deprecated)
 │   │   ├── main.json                 # Production environment config (deprecated)
 │   │   └── staging.json              # Staging environment config (deprecated)
-│   ├── templates/
-│   │   ├── 00-parameters.yaml        # CloudFormation parameters
-│   │   ├── 01-s3-buckets.yaml        # S3 buckets (logs, website, artifacts)
-│   │   ├── 02-cloudfront.yaml        # CloudFront distribution
-│   │   ├── 03-cicd-pipeline.yaml     # CodeBuild + CodePipeline
-│   │   └── 99-outputs.yaml           # CloudFormation outputs
 │   ├── deploy.sh                     # Deployment script (merges templates)
 │   ├── iam-policy-deployment.json    # IAM policy for deployment user
-│   └── template-full.yaml            # Full template (for backup/reference only)
+│   └── template.yaml                 # Resources to deploy
 │
 ├── app/                              # Nextjs app files
 ├── public/

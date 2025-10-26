@@ -28,22 +28,6 @@ if [ -z "$GITHUB_REPO" ]; then
   exit 1
 fi
 
-# Merge all template files using yq
-echo "Merging CloudFormation templates..."
-if ! command -v yq &> /dev/null; then
-  echo "yq could not be found, installing..."
-  sudo snap install yq
-fi
-yq eval-all '. as $item ireduce ({}; . * $item)' \
-  templates/00-parameters.yaml \
-  templates/01-s3-buckets.yaml \
-  templates/02-cloudfront.yaml \
-  templates/03-cicd-pipeline.yaml \
-  templates/99-outputs.yaml \
-  > template.yaml
-echo "Template merged successfully"
-echo ""
-
 # Display deployment configuration
 echo "==================================="
 echo "Deployment Configuration"

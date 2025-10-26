@@ -8,7 +8,7 @@ Next.js 16 (static export) → S3 → CloudFront CDN
 
 GitHub Actions (infra) + AWS CodePipeline (app builds)
 
-## Quick Start
+## Quick Start Local Dev
 
 ```bash
 npm install -g npm
@@ -21,37 +21,27 @@ Visit: <https://d17gn5p8ox2ry2.cloudfront.net/>
 
 ## Initial AWS Setup
 
-### 1. Prerequisites
+- AWS IAM user with policy `infra\iam-policy-deployment.json`. Resources are Wildcard. Use at your own **risk**.
+- Create AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY under the IAM user to let GitHub talk to AWS
+- GitHub repository with dev, staging, main branch (for github action)
+- AWS CodeConnection to allow CodePipeline to talk to GitHub. Get `CODESTAR_CONNECTION_ARN`
+- GitHub Repository Secrets
 
-- AWS account with appropriate permissions
-- GitHub repository with code
-- AWS CodeConnection to GitHub (get `CODESTAR_CONNECTION_ARN`)
+   **Secrets:**
 
-### 2. Create IAM User with Required Permissions
+   ```text
+   AWS_ACCESS_KEY_ID
+   AWS_SECRET_ACCESS_KEY
+   AWS_ACCOUNT_ID
+   AWS_REGION
+   CODESTAR_CONNECTION_ARN
+   ```
 
-The IAM user needs the following permissions. Resources are Wildcard. Use at your own **risk**.
+   **Variables:**
 
-`infra\iam-policy-deployment.json`
-
-### 3. GitHub Repository Secrets
-
-Add these in Settings → Secrets and variables → Actions:
-
-**Secrets:**
-
-```text
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-AWS_ACCOUNT_ID
-AWS_REGION
-CODESTAR_CONNECTION_ARN
-```
-
-**Variables:**
-
-```text
-STACK_NAME_PREFIX
-```
+   ```text
+   STACK_NAME_PREFIX=app-frontend-d74j2s9f
+   ```
 
 ## How Deployment Works
 

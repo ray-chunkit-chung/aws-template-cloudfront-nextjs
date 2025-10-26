@@ -7,7 +7,7 @@ STACK_NAME_PREFIX=${STACK_NAME_PREFIX}
 GITHUB_REPO=${GITHUB_REPO}
 GITHUB_BRANCH=${ENVIRONMENT}
 STACK_NAME="${STACK_NAME_PREFIX}-${ENVIRONMENT}"
-BUCKET_NAME=${STACK_NAME}
+BUCKET_NAME="${STACK_NAME_PREFIX}-s3-${ENVIRONMENT}"
 # FILE_BASED_PARAMETERS=$(jq -r '.[] | "\(.ParameterKey)=\(.ParameterValue)"' "parameters/${ENVIRONMENT}.json")
 
 # Check if environment variables are provided

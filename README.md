@@ -17,6 +17,12 @@ pnpm install
 pnpm dev
 ```
 
+Upgrade everything
+
+```bash
+pnpm i next@latest react@latest react-dom@latest eslint-config-next@latest
+```
+
 Visit: <https://d2ixz5dzkpr4zq.cloudfront.net/>
 
 ## Initial AWS Setup

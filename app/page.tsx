@@ -9,7 +9,7 @@ export default function Home() {
   const [selectedApp, setSelectedApp] = useState("analytics");
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50">
       <Sidebar selectedApp={selectedApp} onSelectApp={setSelectedApp} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />

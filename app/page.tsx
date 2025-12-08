@@ -7,10 +7,16 @@ import { Dashboard } from "./components/Dashboard";
 
 export default function Home() {
   const [selectedApp, setSelectedApp] = useState("analytics");
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar selectedApp={selectedApp} onSelectApp={setSelectedApp} />
+      <Sidebar
+        selectedApp={selectedApp}
+        onSelectApp={setSelectedApp}
+        isCollapsed={isCollapsed}
+        onToggleCollapse={() => setIsCollapsed((prev) => !prev)}
+      />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
         <main className="flex-1 overflow-y-auto">

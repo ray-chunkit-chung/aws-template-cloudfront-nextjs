@@ -1,10 +1,12 @@
 "use client";
 
-import { BarChart3, Database, Users, ShoppingCart, TrendingUp, Settings } from "lucide-react";
+import { BarChart3, Database, Users, ShoppingCart, TrendingUp, Settings, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface SidebarProps {
   selectedApp: string;
   onSelectApp: (app: string) => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
 const apps = [
@@ -16,11 +18,27 @@ const apps = [
   { id: "settings", name: "Settings", icon: Settings },
 ];
 
-export function Sidebar({ selectedApp, onSelectApp }: SidebarProps) {
+export function Sidebar({ selectedApp, onSelectApp, isCollapsed, onToggleCollapse }: SidebarProps) {
   return (
-    <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
-      <div className="p-6 border-b border-gray-800">
-        <h1 className="text-white">DataViz Pro</h1>
+    <aside
+      className={`bg-gray-900 border-r border-gray-800 flex flex-col transition-all duration-300 ${
+        isCollapsed ? "w-20" : "w-64"
+      }`}
+    >
+      <div
+        className={`p-6 border-b border-gray-800 flex items-center ${
+          isCollapsed ? "justify-center" : "justify-between"
+        }`}
+      >
+        {!isCollapsed && <h1 className="text-white">DataViz Pro</h1>}
+        <button
+          onClick={onToggleCollapse}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-expanded={!isCollapsed}
+          className="text-gray-300 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-colors"
+        >
+          {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+        </button>
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
@@ -34,10 +52,11 @@ export function Sidebar({ selectedApp, onSelectApp }: SidebarProps) {
               onClick={() => onSelectApp(app.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 isSelected ? "bg-gray-700 text-white" : "text-gray-300 hover:bg-gray-800"
-              }`}
+              } ${isCollapsed ? "justify-center" : ""}`}
+              title={isCollapsed ? app.name : undefined}
             >
               <Icon className="w-5 h-5" />
-              <span>{app.name}</span>
+              {!isCollapsed && <span>{app.name}</span>}
             </button>
           );
         })}
